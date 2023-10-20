@@ -17,7 +17,7 @@ class PokemonDatabase:
         self.db.execute(command)
         self.flush()
 
-    def create_supplmentary_table(self) -> None:
+    def create_supplementary_table(self) -> None:
         """
         Creates a new table with the following schema:
         DEXNUM: INT PRIMARY KEY
@@ -49,10 +49,10 @@ class PokemonDatabase:
         """
         try:
             command = """INSERT INTO INFORMATION(DEXNUM, ABILITY1, ABILITY2, HIDDENABILITY, TYPE1, TYPE2, SPRITEURL) VALUES(?, ?, ?, ?, ?, ?, ?)"""
-            self.db.execute(command, (dexnum, ability1, ability2, hiddenability, type1, type2, sprite_url))
+            self.db.execute(command, (num, ability1, ability2, hiddenability, type1, type2, sprite_url))
 
         except sqlite3.IntegrityError:
-            print(f"Cannot insert entry: {dexnum} {ability1} {ability2} {hiddenability} {type1} {type2} {sprite_url}")
+            print(f"Cannot insert entry: {num} {ability1} {ability2} {hiddenability} {type1} {type2} {sprite_url}")
 
     def get_data(self, num: int) -> dict:
         """
