@@ -17,6 +17,21 @@ class PokemonDatabase:
         self.db.execute(command)
         self.flush()
 
+    def create_supplmentary_table(self) -> None:
+        """
+        Creates a new table with the following schema:
+        DEXNUM: INT PRIMARY KEY
+        ABILITY1 TEXT NOT NULL
+        ABILITY2 TEXT
+        HIDDENABILITY TEXT
+        TYPE1 TEXT NOT NULL
+        TYPE2 TEXT
+        SPRITEURL TEXT NOT NULL
+        """
+        command = """CREATE TABLE IF NOT EXISTS INFORMATION(DEXNUM INT PRIMARY KEY, ABILITY1 TEXT NOT NULL, ABILITY2 TEXT, HIDDENABILITY TEXT, TYPE1 TEXT NOT NULL, TYPE2 TEXT, SPRITEURL TEXT NOT NULL);"""
+        self.db.execute(command)
+        self.flush()
+
     def insert_entry(self, num: int, name: str, genus: str, entry: str) -> None:
         """
         Inserts entry into pokedex table
@@ -27,6 +42,17 @@ class PokemonDatabase:
         
         except sqlite3.IntegrityError:
             print(f"Cannot insert entry: {num} {name} {genus} {entry}")
+
+    def insert_info_entry(self, num: int, ability1: str, ability2: str, hiddenability: str, type1: str, type2: str, sprite_url: str) -> None:
+        """
+        Inserts info into the database
+        """
+        try:
+            command = """INSERT INTO INFORMATION(DEXNUM, ABILITY1, ABILITY2, HIDDENABILITY, TYPE1, TYPE2, SPRITEURL) VALUES(?, ?, ?, ?, ?, ?, ?)"""
+            self.db.execute(command, (dexnum, ability1, ability2, hiddenability, type1, type2, sprite_url))
+
+        except sqlite3.IntegrityError:
+            print(f"Cannot insert entry: {dexnum} {ability1} {ability2} {hiddenability} {type1} {type2} {sprite_url}")
 
     def get_data(self, num: int) -> dict:
         """
