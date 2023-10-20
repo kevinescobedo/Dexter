@@ -44,6 +44,23 @@ class PokemonDatabase:
         data["entry"] = rows[3]
 
         return data
+    
+    def get_random_data(self) -> dict:
+        """
+        Returns a dict with the following information about a random Pokemon
+        num, name, genus, entry
+        """
+        command = """SELECT * FROM POKEDEX ORDER BY RANDOM() LIMIT 1"""
+        self.cursor.execute(command)
+        rows = self.cursor.fetchone()
+
+        data = dict()
+        data["num"] = rows[0]
+        data["name"] = rows[1]
+        data["genus"] = rows[2]
+        data["entry"] = rows[3]
+
+        return data
 
     def flush(self) -> None:
         """
