@@ -76,7 +76,7 @@ class PokemonDatabase:
         Returns a dict with the following information about a random Pokemon
         num, name, genus, entry
         """
-        command = """SELECT * FROM POKEDEX ORDER BY RANDOM() LIMIT 1"""
+        command = """SELECT * FROM POKEDEX JOIN INFORMATION ON POKEDEX.NUM = INFORMATION.DEXNUM ORDER BY RANDOM() LIMIT 1"""
         self.cursor.execute(command)
         rows = self.cursor.fetchone()
 
@@ -85,6 +85,12 @@ class PokemonDatabase:
         data["name"] = rows[1]
         data["genus"] = rows[2]
         data["entry"] = rows[3]
+        data["ability-1"] = rows[5]
+        data["ability-2"] = rows[6]
+        data["hidden-ability"] = rows[7]
+        data["type-1"] = rows[8]
+        data["type-2"] = rows[9]
+        data["sprite-url"] = rows[10]
 
         return data
 
