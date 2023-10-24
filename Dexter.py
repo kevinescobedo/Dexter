@@ -1,14 +1,10 @@
 import discord
 import secret #File containing bot token
-import pokemon_database
+import game
 
 class Dexter(discord.Client):
     async def on_ready(self):
-        self.pokedex = pokemon_database.PokemonDatabase("pokedex.db")
-        self.answer = None
-        self.hints = None
-        self.hints_count = 0
-        self.inGame = False
+        self.games = dict()
         await client.change_presence(activity=discord.Game(name="Pokémon"))
 
     async def on_message(self, message):
@@ -16,59 +12,32 @@ class Dexter(discord.Client):
         Handles message input
         """
         if message.content == "!stop":
+            for discordID in self.games:
+                self.games[discordID].pokedex.close()
             await client.close()
 
         if message.content == "!pokemon":
-            info = self.pokedex.get_random_data()
-            entry = info["entry"]
-            self.answer = info["name"].lower()
-            entry = entry.replace(info["name"], "<BLANK>")
-            entry = entry.replace(info["name"].lower(), "<BLANK>")
-            entry = entry.replace(info["name"].upper(), "<BLANK>")
-            entry = entry.replace("POKéMON", "Pokémon")
-            self.inGame = True
-            self.hints_count = 0
-            type1 = info["type-1"]
-            type2 = info["type-2"]
+            self.games[message.author.id] = game.Game(message.author.id)
+            entry = self.games[message.author.id].start_game()
 
-            if type2:
-                pokemonType = f"{type1} and {type2} type"
-
-            else:
-                pokemonType = f"{type1} type"
-            self.hints = [info["genus"], pokemonType, info["sprite-url"]]
             await message.channel.send(f"{entry}")
 
-        if self.inGame and message.content.startswith("!guess"):
-            guess = message.content.split("!guess")[1].strip()
-            if guess.lower() == self.answer:
-                self.inGame = False
-                await message.channel.send(f"<@{message.author.id}> Correct!")
+        try:
+            if self.games[message.author.id].in_game() and message.content.startswith("!guess"):
+                guess = message.content.split("!guess")[1].strip()
+                result = self.games[message.author.id].make_guess(guess)
+                await message.channel.send(f"{result}")
 
-            else:
-                await message.channel.send(f"<@{message.author.id}> I'm sorry, that's incorrect...")
+        except KeyError:
+            pass
 
-        if self.inGame and message.content == "!hint":
-            if self.hints_count >= 3:
-                self.inGame = False
-                await message.channel.send(f"<@{message.author.id}> The answer was {self.answer.title()}")
+        try:
+            if self.games[message.author.id].in_game() and message.content == "!hint":
+                hint = self.games[message.author.id].give_hint()
+                await message.channel.send(f"{hint}")
 
-            else:
-                hint = self.hints[self.hints_count]
-                if self.hints_count == 0:
-                    hint = f"This species is known as the {hint}"
-                    await message.channel.send(f"<@{message.author.id}> {hint}")
-
-                if self.hints_count == 1:
-                    hint = f"This Pokémon's type is {hint}"
-                    await message.channel.send(f"<@{message.author.id}> {hint}")
-
-                if self.hints_count == 2:
-                    await message.channel.send(f"<@{message.author.id}> This is what the Pokémon looks like:")
-                    await message.channel.send(f"{hint}")
-
-                self.hints_count += 1
-
+        except KeyError:
+            pass
 
         if message.content == "!hello":
             await message.channel.send(f"<@{message.author.id}> Hello!")
